@@ -4,6 +4,13 @@ pipeline{
         SCANNER_HOME=tool 'sonar-scanner'
     }
     stages{
+        stage('clean workspace'){
+            steps{
+                dir('worker'){}
+                    cleanWs()
+                }
+            }
+        }
         stage('git checkout'){
             steps{
                 dir('worker'){
