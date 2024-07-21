@@ -1,0 +1,18 @@
+pipeline{
+    agent any
+    tools{
+        nodejs 'node18'
+    }
+    environment{
+        SCANNER_HOME=tool 'sonar-scanner'
+    }
+    stages{
+        stage('git checkout'){
+            steps{
+                dir('vote'){
+                    git branch: 'main', url: 'https://github.com/mukeshr-29/Voting-app-microServices.git'
+                }
+            }
+        }
+    }
+}
