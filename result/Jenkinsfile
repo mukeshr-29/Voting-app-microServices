@@ -14,10 +14,10 @@ pipeline{
                 }
             }
         }
-        stage('unit testing'){
+        stage('install dependencies'){
             steps{
-                dir('result/tests'){
-                    sh 'npm test'
+                dir('result'){
+                    sh 'npm install'
                 }
             }
         }
