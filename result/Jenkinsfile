@@ -37,7 +37,7 @@ pipeline{
         }
         stage('static code analysis'){
             steps{
-                dir('result'){
+                dir('result/tests'){
                     script{
                         withSonarQubeEnv('sonar-server'){
                             sh '''
