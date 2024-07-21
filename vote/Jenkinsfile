@@ -1,8 +1,5 @@
 pipeline{
     agent any
-    tools{
-        nodejs 'node18'
-    }
     environment{
         SCANNER_HOME=tool 'sonar-scanner'
     }
@@ -11,6 +8,59 @@ pipeline{
             steps{
                 dir('vote'){
                     git branch: 'main', url: 'https://github.com/mukeshr-29/Voting-app-microServices.git'
+                }
+            }
+        }
+        stage('filesystem scan'){
+            steps{
+                dir('vote'){
+                    sh 'trivy fs --format table -o trivyfs-votereport.html .'
+                }
+            }
+        }
+        stage('static code analysis'){
+            steps{
+                dir('vote'){
+                    script{
+                        withSonarQubeEnv('sonar-server'){
+                            sh '''
+                                $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=vote-service \
+                                    -Dsonar.projectKey=vote-service
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+        stage('quality gate'){
+            steps{
+                dir('vote'){
+                    script{
+                        waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token'
+                    }
+                }
+            }
+        }
+        stage('docker image build and tag'){
+            steps{
+                dir('vote'){
+                    sh 'docker build -t mukeshr29/vote-service .'
+                }
+            }
+        }
+        stage('docker image scanning'){
+            steps{
+                dir('vote'){
+                    sh 'trivy image --format table -o trivyimg-votereport.html mukeshr29/vote-service'
+                }
+            }
+        }
+        stage('docker image push to repo'){
+            steps{
+                script{
+                    withDockerRegistry(credentialsId: 'dockerhub', toolName: 'docker'){
+                        sh 'docker push mukeshr29/vote-service'
+                    }
                 }
             }
         }
