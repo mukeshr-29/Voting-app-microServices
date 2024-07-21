@@ -1,0 +1,69 @@
+pipeline{
+    agent any
+    tools{
+        nodejs 'node18'
+    }
+    environment{
+        SCANNER_HOME=tool 'sonar-scanner'
+    }
+    stages{
+        stage('git checkout'){
+            steps{
+                dir('result'){
+                    git branch: 'main', url: 'https://github.com/mukeshr-29/Voting-app-microServices.git'
+                }
+            }
+        }
+        stage('install dependencies'){
+            steps{
+                dir('result'){
+                    sh 'npm install'
+                }
+            }
+        }
+        stage('filesystem scan'){
+            steps{
+                dir('result'){
+                    sh 'trivy fs --format table -o trivyfs-report.html .'
+                }
+            }
+        }
+        stage('static code analysis'){
+            steps{
+                dir('result'){
+                    script{
+                        withSonarQubeEnv('sonar-server'){
+                            sh '''
+                                $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=result-service \
+                                    -Dsonar.projectkey=result-service
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+        stage('docker image build and tag'){
+            steps{
+                dir('result'){
+                    sh 'docker build -t mukeshr29/result-service .'
+                }
+            }
+        }
+        stage('docker image scanning'){
+            steps{
+                dir('result'){
+                    sh 'trivy image --format table -o trivyimg-report.html mukeshr29/result-service'
+                }
+            }
+        }
+        stage('docker image push to repo'){
+            steps{
+                script{
+                    withDockerRegistry(credentialsId: 'dockerhub', toolName: 'docker'){
+                        sh 'docker push mukeshr29/result-service'
+                    }
+                }
+            }
+        }
+    }
+}
