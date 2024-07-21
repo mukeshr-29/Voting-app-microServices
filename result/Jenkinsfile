@@ -21,6 +21,13 @@ pipeline{
                 }
             }
         }
+        stage('unit testing'){
+            steps{
+                dir('result'){
+                    sh 'npm test'
+                }
+            }
+        }
         stage('filesystem scan'){
             steps{
                 dir('result'){
@@ -38,6 +45,15 @@ pipeline{
                                     -Dsonar.projectKey=result-service
                             '''
                         }
+                    }
+                }
+            }
+        }
+        stage('static code analysis'){
+            steps{
+                dir('result'){
+                    script{
+                        waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token'
                     }
                 }
             }
