@@ -44,7 +44,7 @@ pipeline{
         stage('docker image build and tag'){
             steps{
                 dir('worker'){
-                    sh 'sudo rm -rf worker'
+                    sh 'rm -rf worker'
                     sh 'docker build -t mukeshr29/worker-service .'
                 }
             }
