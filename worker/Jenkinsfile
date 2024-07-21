@@ -6,7 +6,7 @@ pipeline{
     stages{
         stage('clean workspace'){
             steps{
-                dir('worker'){}
+                dir('worker'){
                     cleanWs()
                 }
             }
