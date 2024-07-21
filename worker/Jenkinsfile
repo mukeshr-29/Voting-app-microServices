@@ -3,6 +3,7 @@ pipeline{
     environment{
         SCANNER_HOME=tool 'sonar-scanner'
     }
+    stages{
         stage('git checkout'){
             steps{
                 dir('worker'){
