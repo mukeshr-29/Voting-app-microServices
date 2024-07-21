@@ -35,7 +35,7 @@ pipeline{
                         withSonarQubeEnv('sonar-server'){
                             sh '''
                                 $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=result-service \
-                                    -Dsonar.projectkey=result-service
+                                    -Dsonar.projectKey=result-service
                             '''
                         }
                     }
