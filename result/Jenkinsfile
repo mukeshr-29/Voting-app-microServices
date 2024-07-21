@@ -23,7 +23,7 @@ pipeline{
         }
         stage('unit testing'){
             steps{
-                dir('result'){
+                dir('result/tests'){
                     sh 'npm test'
                 }
             }
@@ -37,7 +37,7 @@ pipeline{
         }
         stage('static code analysis'){
             steps{
-                dir('result/tests'){
+                dir('result'){
                     script{
                         withSonarQubeEnv('sonar-server'){
                             sh '''
