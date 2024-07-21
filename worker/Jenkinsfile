@@ -1,0 +1,68 @@
+pipeline{
+    agent any
+    environment{
+        SCANNER_HOME=tool 'sonar-scanner'
+    }
+    stages{
+        stage('git checkout'){
+            steps{
+                dir('worker'){
+                    git branch: 'main', url: 'https://github.com/mukeshr-29/Voting-app-microServices.git'
+                }
+            }
+        }
+        stage('filesystem scan'){
+            steps{
+                dir('worker'){
+                    sh 'trivy fs --format table -o trivyfs-workerreport.html .'
+                }
+            }
+        }
+        stage('static code analysis'){
+            steps{
+                dir('worker'){
+                    script{
+                        withSonarQubeEnv('sonar-server'){
+                            sh '''
+                                $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=worker-service \
+                                    -Dsonar.projectKey=worker-service
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+        stage('quality gate'){
+            steps{
+                dir('worker'){
+                    script{
+                        waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token'
+                    }
+                }
+            }
+        }
+        stage('docker image build and tag'){
+            steps{
+                dir('worker'){
+                    sh 'docker build -t mukeshr29/worker-service .'
+                }
+            }
+        }
+        stage('docker image scanning'){
+            steps{
+                dir('worker'){
+                    sh 'trivy image --format table -o trivyimg-workerreport.html mukeshr29/worker-service'
+                }
+            }
+        }
+        stage('docker image push to repo'){
+            steps{
+                script{
+                    withDockerRegistry(credentialsId: 'dockerhub', toolName: 'docker'){
+                        sh 'docker push mukeshr29/worker-service'
+                    }
+                }
+            }
+        }
+    }
+}
