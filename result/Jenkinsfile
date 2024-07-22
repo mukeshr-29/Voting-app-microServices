@@ -74,5 +74,16 @@ pipeline{
                 }
             }
         }
+        stage('deploy to k8s'){
+            steps{
+                dir('result'){
+                    script{
+                        withKubeConfig(caCertificate: '', clusterName: 'my-app', contextName: '', credentialsId: 'k8s', namespace: 'vote', restrictKubeConfigAccess: false, serverUrl: 'https://7AE0C0CA10BA163F2369F1970D91B954.gr7.us-east-1.eks.amazonaws.com'){
+                            sh 'kubectl apply -f result-deployment.yaml -f result-service.yaml'
+                        }
+                    }
+                }
+            }
+        }
     }
 }
